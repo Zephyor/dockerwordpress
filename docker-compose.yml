@@ -39,6 +39,8 @@ services:
       - '8080:8080'
     volumes:
       - wordpress_data:/bitnami/wordpress
+    deploy:
+      replicas: 2
 
   nginx:
     image: bitnami/nginx:latest
