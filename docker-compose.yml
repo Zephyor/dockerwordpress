@@ -1,0 +1,56 @@
+version: '3.7'
+
+services:
+  mysql:
+    image: bitnami/mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    volumes:
+      - mysql_data:/bitnami/mysql/data
+
+  redis:
+    image: bitnami/redis:latest
+    environment:
+      REDIS_PASSWORD: redispass
+    volumes:
+      - redis_data:/bitnami/redis/data
+
+  wordpress:
+    image: bitnami/wordpress:latest
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      WORDPRESS_DATABASE_HOST: mysql
+      WORDPRESS_DATABASE_USER: wordpress
+      WORDPRESS_DATABASE_PASSWORD: wordpress
+      WORDPRESS_DATABASE_NAME: wordpress
+      WORDPRESS_TABLE_PREFIX: wp_
+      WORDPRESS_SCHEME: http
+      WORDPRESS_EXTRA_WP_CONFIG_CONTENT: |
+        define('WP_CACHE_KEY_SALT', 'blblbl');
+        define('WP_CACHE', true);
+        define('WP_REDIS_HOST', 'redis');
+        define('WP_REDIS_PASSWORD', 'redispass');
+    ports:
+      - '8080:8080'
+    volumes:
+      - wordpress_data:/bitnami/wordpress
+
+  nginx:
+    image: bitnami/nginx:latest
+    depends_on:
+      - wordpress
+    volumes:
+      - ./nginx.conf:/opt/bitnami/nginx/conf/server_blocks/wordpress.conf
+    ports:
+      - '80:8080'
+    restart: always
+
+volumes:
+  mysql_data:
+  redis_data:
+  wordpress_data:
